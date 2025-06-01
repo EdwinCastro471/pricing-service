@@ -13,6 +13,25 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private final JdbcTemplate jdbcTemplate;
     private static final String CSV_FILE_PATH = "classpath:data/prices.csv";
+    private static final String INSERT_SQL = """
+            INSERT INTO PRICES (
+                BRAND_ID, START_DATE, END_DATE, PRICE_LIST, 
+                PRODUCT_ID, PRIORITY, PRICE, CURRENCY, 
+                LAST_UPDATE, LAST_UPDATE_BY
+            )
+            SELECT 
+                CAST(BrandId AS BIGINT),
+                PARSEDATETIME(StartDate, 'yyyy-MM-dd-HH.mm.ss'),
+                PARSEDATETIME(EndDate, 'yyyy-MM-dd-HH.mm.ss'),
+                CAST(PriceList AS INTEGER),
+                CAST(ProductId AS BIGINT),
+                CAST(Priority AS INTEGER),
+                CAST(Price AS DECIMAL(10,2)),
+                Currency,
+                PARSEDATETIME(LastUpdate, 'yyyy-MM-dd-HH.mm.ss'),
+                LastUpdateBy
+            FROM CSVREAD('classpath:data/prices.csv', null, 'fieldSeparator=,')
+        """;
 
     public DatabaseInitializer(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -34,27 +53,6 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
 
     private int executeInsertFromCsv() {
-        return jdbcTemplate.update("""
-    INSERT INTO PRICES (
-        BRAND_ID, START_DATE, END_DATE, PRICE_LIST, 
-        PRODUCT_ID, PRIORITY, PRICE, CURRENCY, 
-        LAST_UPDATE, LAST_UPDATE_BY
-    )
-    SELECT 
-        CAST(BrandId AS BIGINT),
-        PARSEDATETIME(StartDate, 'yyyy-MM-dd-HH.mm.ss'),
-        PARSEDATETIME(EndDate, 'yyyy-MM-dd-HH.mm.ss'),
-        CAST(PriceList AS INTEGER),
-        CAST(ProductId AS BIGINT),
-        CAST(Priority AS INTEGER),
-        CAST(Price AS DECIMAL(10,2)),
-        Currency,
-        PARSEDATETIME(LastUpdate, 'yyyy-MM-dd-HH.mm.ss'),
-        LastUpdateBy
-    FROM CSVREAD('classpath:data/prices.csv', null, 'fieldSeparator=,')
-""");
-
+        return jdbcTemplate.update(INSERT_SQL);
     }
-
-
 }
