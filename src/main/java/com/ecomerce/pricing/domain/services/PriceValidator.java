@@ -1,5 +1,6 @@
 package com.ecomerce.pricing.domain.services;
 
+import com.ecomerce.pricing.domain.exceptions.InvalidDateRangeException;
 import com.ecomerce.pricing.domain.exceptions.InvalidPriceException;
 import com.ecomerce.pricing.domain.models.Price;
 import org.springframework.stereotype.Component;
@@ -23,10 +24,10 @@ public class PriceValidator {
 
     private void validateDateRange(Price price, LocalDateTime date) {
         if (date.isBefore(price.getStartDate())) {
-            throw new InvalidPriceException("The application date is before the valid range.");
+            throw new InvalidDateRangeException("The application date is before the valid range.");
         }
         if (date.isAfter(price.getEndDate())) {
-            throw new InvalidPriceException("The application date is after the valid range.");
+            throw new InvalidDateRangeException("The application date is after the valid range.");
         }
     }
 }
