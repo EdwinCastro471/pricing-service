@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -27,38 +26,17 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         log.warn("Resource not found: {}", ex.getMessage());
-        return buildErrorResponse(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND,
-                request
-        );
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAllExceptions(
-            Exception ex,
-            WebRequest request
-    ) {
-        log.error("Unexpected error : {}", ex.getMessage(), ex);
-        return buildErrorResponse(
-                "Internal server error. Please contact support.",
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                request
-        );
+        return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND, request);
     }
 
     @ExceptionHandler({
-            IllegalArgumentException.class,
             InvalidDateRangeException.class,
-            MethodArgumentNotValidException.class
+            MethodArgumentNotValidException.class,
+            MethodArgumentTypeMismatchException.class
     })
-    public ResponseEntity<Object> handleBusinessExceptions(RuntimeException ex, WebRequest request) {
-        log.warn("Business error: {}", ex.getMessage());
-        return buildErrorResponse(
-                ex.getMessage(),
-                HttpStatus.BAD_REQUEST,
-                request
-        );
+    public ResponseEntity<Object> handleClientErrors(Exception ex, WebRequest request) {
+        log.warn("Client error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
     }
 
     @ExceptionHandler(DataInitializationException.class)
@@ -74,19 +52,28 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Object> handleTypeMismatch(
-            MethodArgumentTypeMismatchException ex,
-            WebRequest request
-    ) {
-        log.warn("Type mismatch: {}", ex.getMessage());
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        log.error("Illegal argument: {}", ex.getMessage(), ex);
         return buildErrorResponse(
-                "Invalid value for parameter: " + ex.getName(),
-                HttpStatus.BAD_REQUEST,
+                "Internal server error. Please contact support.",
+                HttpStatus.INTERNAL_SERVER_ERROR,
                 request
         );
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllExceptions(
+            Exception ex,
+            WebRequest request
+    ) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return buildErrorResponse(
+                "Internal server error. Please contact support.",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                request
+        );
+    }
 
     private ResponseEntity<Object> buildErrorResponse(
             String message,
