@@ -21,7 +21,7 @@ Developed with **Java 21 Spring Boot**, following a **Hexagonal Architecture**.
 - **JUnit 5** + **Mockito** (Testing)
 
 
-## 🚀 How Launch
+## How Launch
 
 ### Requirements
 - Java 21
