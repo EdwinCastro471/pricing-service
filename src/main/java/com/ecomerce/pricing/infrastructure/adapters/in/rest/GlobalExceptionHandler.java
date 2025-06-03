@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -19,6 +20,13 @@ import java.util.Map;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Object> handleMissingParams(MissingServletRequestParameterException ex, WebRequest request) {
+        log.warn("Missing request parameter: {}", ex.getMessage());
+        String message = String.format("Missing required parameter: '%s'", ex.getParameterName());
+        return buildErrorResponse(message, HttpStatus.BAD_REQUEST, request);
+    }
 
     @ExceptionHandler(PriceNotFoundException.class)
     public ResponseEntity<Object> handlePriceNotFound(
